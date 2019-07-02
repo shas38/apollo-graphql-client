@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
-import { connect } from 'react-redux';
+import { Query } from "react-apollo";
+import {TestlogsQuery} from '../graphql/query/';
 
-const Home = (props: any) => {
+const Home = (props: any) =>(
 
-  const [writer, setWriter] = useState(props.writers[props.writers.length-1])
-  
-  const handleClick = () => {
-    setWriter(props.writers[props.writers.length-2])
-  }
-  return (
-    <div>
-        <h1>Home</h1>
-        <p>{writer.name}</p>
-        <button onClick={handleClick}>Second Last</button>
-    </div>
-  );
-}
+  <Query query={TestlogsQuery} variables={{ testId:  "9r01cdowz2"}}>
+    {({ loading, error, data }: any) => {
+      if (loading) return null;
+      if (error) return `Error! ${error}`;
+      console.log(data)
+      return(<div>
+          <h1>{data.testlogs[0].id}</h1>
+          <p>{data.testlogs[0].AParty.sbc.fqdn}</p>
+          <button >Second Last</button>
+      </div>);
+    }}
+  </Query>
+);
 
-const mapStateToProps = (state: any) => {
-  return {
-    writers: state.writers
-  }
-}
 
-export default connect(mapStateToProps)(Home);
+
+
+export default Home;

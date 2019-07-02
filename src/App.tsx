@@ -1,19 +1,28 @@
 import React from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
-import { createStore } from 'redux';
-import { Provider } from 'react-redux';
+import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "react-apollo";
 import './App.css';
 import Home from './pages/Home'
 import Writers from './pages/Writers'
 import TopNavigation from "./navigation/TopNavigation"
-import reduxReducers from './reducers/reduxReducers';
 
-const store = createStore(reduxReducers);
+
+
+
+const client = new ApolloClient({
+  uri: "http://localhost:5000/graphql"
+});
+
+// client
+//   .query(testlogsQuery("9r01cdowz2"))
+//   .then(result => console.log(result));
+
 
 function App() {
 
   return (
-    <Provider store={store}>
+    <ApolloProvider client={client}>
       <BrowserRouter>
         <TopNavigation>
           <Switch>
@@ -32,7 +41,7 @@ function App() {
           </Switch>
         </TopNavigation>
       </BrowserRouter>
-    </Provider>
+    </ApolloProvider>
   );
 }
 

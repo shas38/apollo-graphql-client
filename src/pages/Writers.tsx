@@ -1,5 +1,4 @@
 import React, {useEffect, useReducer} from 'react';
-import { connect } from 'react-redux';
 import addWritersAction from '../actions/addWritersAction';
 
 type IappState = {
@@ -80,12 +79,4 @@ const Writers = (props: any) => {
   );
 }
 
-const mapDispatchToProps = (dispatch: any) =>{
-  console.log({dispatch})
-  return {
-    addWriters: (writers: any) => {
-      dispatch(addWritersAction(writers));
-    }
-  }
-}
-export default connect(null, mapDispatchToProps)(Writers);
+export default Writers;
