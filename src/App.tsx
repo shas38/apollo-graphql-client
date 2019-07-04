@@ -1,23 +1,35 @@
 import React from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import ApolloClient from "apollo-boost";
-import { ApolloProvider } from "react-apollo";
+import { ApolloProvider } from "react-apollo-hooks";
+import { InMemoryCache } from 'apollo-cache-inmemory';
 import './App.css';
-import Home from './pages/Home'
-import Writers from './pages/Writers'
+import Home from './components/Home'
 import TopNavigation from "./navigation/TopNavigation"
+import CreateTests from "./components/createTests/CreateTests"
+import setSelectedTestTypeMutation from "./graphql/reducers/setSelectedTestTypeMutation"
 
+
+const cache = new InMemoryCache();
+const initData = {
+  selectedTestType: '',
+};
 
 
 
 const client = new ApolloClient({
-  uri: "http://localhost:5000/graphql"
+  uri: "http://localhost:5000/graphql",
+  cache,
+  resolvers:{
+    Mutation: {
+      setSelectedTestType: setSelectedTestTypeMutation,
+    }
+  }
 });
 
-// client
-//   .query(testlogsQuery("9r01cdowz2"))
-//   .then(result => console.log(result));
+cache.writeData({ data: initData });
 
+client.onResetStore(async () => cache.writeData({ data: initData }));
 
 function App() {
 
@@ -32,8 +44,8 @@ function App() {
               component={Home}
             />
             <Route
-              path="/writers"
-              component={Writers}
+              path="/createTests"
+              component={CreateTests}
             />
             <Route
               render={()=> <h1>Not Found</h1>}
