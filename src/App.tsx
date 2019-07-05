@@ -7,12 +7,31 @@ import './App.css';
 import Home from './components/Home'
 import TopNavigation from "./navigation/TopNavigation"
 import CreateTests from "./components/createTests/CreateTests"
-import setSelectedTestTypeMutation from "./graphql/reducers/setSelectedTestTypeMutation"
+import setCallTestInputsMutation from "./graphql/reducers/setCallTestInputsMutation"
+import setStageMutation from "./graphql/reducers/setStageMutation"
 
 
 const cache = new InMemoryCache();
 const initData = {
-  selectedTestType: '',
+  testName: null,
+  selectedTestType: null,
+  stage: 'SelectTestType',
+  AParty:{
+      __typename: 'Party',
+      selectedDN: null,
+      selectedSbc: null,
+      selectedProduct: null,
+      selectedRegion: null,
+      selectedCluster: null,
+  },
+  BParty:{
+      __typename: 'Party',
+      selectedDN: null,
+      selectedSbc: null,
+      selectedProduct: null,
+      selectedRegion: null,
+      selectedCluster: null,
+  },
 };
 
 
@@ -22,7 +41,8 @@ const client = new ApolloClient({
   cache,
   resolvers:{
     Mutation: {
-      setSelectedTestType: setSelectedTestTypeMutation,
+      setCallTestInputs: setCallTestInputsMutation,
+      setStage: setStageMutation,
     }
   }
 });
