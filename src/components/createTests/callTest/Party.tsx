@@ -1,32 +1,14 @@
-import React, { useState, useEffect, Fragment} from 'react';
+import React, { useState, Fragment} from 'react';
 import gql from 'graphql-tag';
 import { useMutation, useQuery } from 'react-apollo-hooks';
-import { createMuiTheme } from '@material-ui/core/styles'; 
 import Button from '@material-ui/core/Button';
 import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
-import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import callTestInputsQuery from '../../../graphql/query/callTestInputsQuery';
+import callTestInputsQuery from '../../../graphql/query/callTest/callTestInputsQuery';
+import {useStyles} from './SelectTestType';
 
-const useStyles = makeStyles((theme: Theme) =>
-createStyles({
-    root: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        flexDirection: 'column'
-    },
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 120,
-    },
-    selectEmpty: {
-        marginTop: theme.spacing(2),
-    },
-}),
-);
 
 const Party = (props: any) => {
 
@@ -91,14 +73,13 @@ const Party = (props: any) => {
     
     const nextStep = (e: any) => {
         e.preventDefault();
-        if(partyName == 'AParty') setStageMutation({ variables: {stage: 'SelectBParty'} }); 
-        else setStageMutation({ variables: {stage: 'ConfirmCallTest'} }); 
-        
+        if(partyName === 'AParty') setStageMutation({ variables: {stage: 'SelectBParty'} }); 
+        else setStageMutation({ variables: {stage: 'ConfirmCallTest'} });      
     };
     
     const prevStep = (e: any) => {
         e.preventDefault();
-        if(partyName == 'AParty') setStageMutation({ variables: {stage: 'SelectTestType'} }); 
+        if(partyName === 'AParty') setStageMutation({ variables: {stage: 'SelectTestType'} }); 
         else setStageMutation({ variables: {stage: 'SelectAParty'} }); 
     };
     

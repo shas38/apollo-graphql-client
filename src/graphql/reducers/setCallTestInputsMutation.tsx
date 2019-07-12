@@ -1,8 +1,8 @@
-import testTypeInputsQuery from '../query/testTypeInputsQuery';
+import selectedCallTestInputQuery from '../query/callTest/selectedCallTestInputQuery';
 
 export default (_root: any, {inputType, inputValue, partyName}: {inputType: String, inputValue: String, partyName: String}, { cache, getCacheKey }: any, info: any) => {
-
-    if(inputType === 'testName' || inputType === 'selectedTestType'){
+    
+    if(inputType === 'testName' || inputType === 'selectedTestType' || inputType === 'testDescription'){
         cache.writeData({data: { [inputType as string]: inputValue }});
     }
     else{
@@ -11,7 +11,7 @@ export default (_root: any, {inputType, inputValue, partyName}: {inputType: Stri
     
 
     console.log('selectedTestTypeQuery', cache.readQuery({
-        query: testTypeInputsQuery 
+        query: selectedCallTestInputQuery 
     }))
     return null;
 }

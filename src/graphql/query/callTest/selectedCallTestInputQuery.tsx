@@ -1,9 +1,10 @@
 import { gql } from "apollo-boost";
 
 export default gql`
-    query testTypeInputs{
+    query selectedCallTestInput{
         testName @client(always: true)
-        selectedTestType @client(always: true)   
+        selectedTestType @client(always: true) 
+        testDescription @client(always: true) 
         AParty{
             selectedDN @client(always: true)  
             selectedSbc @client(always: true)  

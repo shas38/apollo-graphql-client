@@ -4,13 +4,15 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
 import Hidden from '@material-ui/core/Hidden';
 import IconButton from '@material-ui/core/IconButton';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import MailIcon from '@material-ui/icons/Mail';
+import EditIcon from '@material-ui/icons/Edit';
+import SetIcon from '@material-ui/icons/SettingsEthernet';
+import RunIcon from '@material-ui/icons/PlayCircleOutline';
 import MenuIcon from '@material-ui/icons/Menu';
+import AddIcon from '@material-ui/icons/AddCircleOutline';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
@@ -75,7 +77,11 @@ function ResponsiveDrawer(props: any) {
         </Hidden>
         
         <List>
-          {[{text: 'Home', to: '/', icon: <InboxIcon />}, {text: 'Create Tests', to: '/createTests', icon: <MailIcon />}].map((item, index) => (
+          {[{text: 'Run Tests', to: '/', icon: <RunIcon />},
+           {text: 'Create Tests', to: '/createTests', icon: <AddIcon />},
+           {text: 'Create Test Sets', to: '/createTestSets', icon: <SetIcon />},
+           {text: 'Modify Tests', to: '/modifyTests', icon: <EditIcon />},
+          ].map((item, index) => (
             <ListItem component={Link} to={item.to} button key={item.text} selected={location.pathname === item.to}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText>{item.text}</ListItemText>

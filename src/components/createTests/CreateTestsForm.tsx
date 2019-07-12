@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { } from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import SelectTestType from './callTest/SelectTestType';
 import Party from './callTest/Party';
 import ConfirmCallTest from './callTest/ConfirmCallTest';
+import SuccessCallTest from './callTest/SuccessCallTest';
 import stageQuery from '../../graphql/query/stageQuery';
 
 
 const CreateTestsForm = (props: any) => {
 
     const data = useQuery(stageQuery);
-    console.log({CreateTestsForm: data});
     const stage = data.data.stage;
 
     switch (stage) {
@@ -31,8 +31,8 @@ const CreateTestsForm = (props: any) => {
             );
         case 'ConfirmCallTest':
             return <ConfirmCallTest />;
-        // case 4:
-        //     return <Success />;
+        case 'SuccessCallTest':
+            return <SuccessCallTest />;
         default:
             return(
                 <SelectTestType/>

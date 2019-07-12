@@ -11,21 +11,21 @@ import FormControl from '@material-ui/core/FormControl';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import testTypesQuery from '../../../graphql/query/testTypesQuery';
 
-const useStyles = makeStyles((theme: Theme) =>
-createStyles({
-    root: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        flexDirection: 'column'
-    },
-    formControl: {
-        margin: theme.spacing(1),
-        minWidth: 120,
-    },
-    selectEmpty: {
-        marginTop: theme.spacing(2),
-    },
-}),
+export const useStyles = makeStyles((theme: Theme) =>
+    createStyles({
+        root: {
+            display: 'flex',
+            flexWrap: 'wrap',
+            flexDirection: 'column'
+        },
+        formControl: {
+            margin: theme.spacing(1),
+            minWidth: 120,
+        },
+        selectEmpty: {
+            marginTop: theme.spacing(2),
+        },
+    }),
 );
 
 const FormPersonalDetails = (props: any) => {
@@ -46,9 +46,6 @@ const FormPersonalDetails = (props: any) => {
             setStage(stage: $stage) @client
         }
     `);
-    
-    // const callTestInputsQueryResult = useQuery(callTestInputsQuery);
-    // const callTestInputs = callTestInputsQueryResult.data;
     
     const { loading, error, data }: any = useQuery(testTypesQuery);
     const { testTypes } = data;
@@ -92,6 +89,17 @@ const FormPersonalDetails = (props: any) => {
                     onChange={handleChange('testName')}
                     style={{margin: '0 0 auto'}}
                     helperText="Required"
+                />
+            </FormControl>
+            <FormControl className={classes.formControl} style={{display: 'block'}} >
+                <TextField
+                    // required
+                    placeholder="Short Description"
+                    label="Test Description"
+                    id='testDescription'
+                    onChange={handleChange('testDescription')}
+                    style={{margin: '0 0 auto'}}
+                    // helperText="Required"
                 />
             </FormControl>
             <FormControl className={classes.formControl} required>
