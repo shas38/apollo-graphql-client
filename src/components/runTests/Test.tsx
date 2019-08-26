@@ -4,7 +4,7 @@ import {
     makeStyles,
     Theme,
   } from '@material-ui/core/styles';
-import { useMutation, useQuery } from 'react-apollo-hooks';
+import { useMutation } from 'react-apollo-hooks';
 import gql from 'graphql-tag';
 // import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
@@ -17,6 +17,8 @@ import { green, red, blue } from '@material-ui/core/colors';
 import PauseCircleOutline from '@material-ui/icons/PauseCircleOutline';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
+import Result from './Result';
+import Console from './Console';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -51,19 +53,33 @@ const useStyles = makeStyles((theme: Theme) =>
       },
   }),
 );
-
+type Stage = {
+    stage: string,
+    numberOfTestsCompleted: number,
+}
 export default (props: any) =>{
 
-    // console.log('DOMAIN', `${process.env.REACT_APP_DOMAIN}`)
-    const socket = props.socket;
     const classes = useStyles();
-    const [stage, setStage] = useState('READY');
-    const [testId, setTestId] = useState<String|null>(null);
+    const [stage, setStage] = useState<Stage>({
+        stage: 'READY',
+        numberOfTestsCompleted: 0,
+    });
+    const [openResult, setOpenResult] = useState(false);
+    const [openConsole, setOpenConsole] = useState(false);
+    const [testId, setTestId] = useState<Array<string>>([]);
+    // const [numberOfTestsCompleted, setNumberOfTestsCompleted] = useState<number|null>(null);
     const [backgroundColor, setBackgroundColor] = useState(blue[500]);
     const [activeIcon, setActiveIcon] = useState(<PlayCircleOutline />);
+    const [testLogs, setTestLogs] = useState();
+    useEffect(()=>{
+
+        if(props.testLogs && testId.includes(props.testLogs.testId)){
+            setTestLogs(props.testLogs.data)
+        }
+    }, [props.testLogs]);
 
     useEffect(()=>{
-        switch(stage){
+        switch(stage.stage){
             case "PASSED":
                 setActiveIcon(<CheckIcon/>)
                 setBackgroundColor(green[500]);
@@ -84,53 +100,109 @@ export default (props: any) =>{
                 setActiveIcon(<PlayCircleOutline/>)
                 break;
         }
+    }, [stage.stage]);
+
+    useEffect(()=>{
+        if(testId.includes(props.finishedTest.id) && stage.stage === "RUNNING"){
+            
+            setStage({
+                ...stage,
+                numberOfTestsCompleted: stage.numberOfTestsCompleted + 1,
+            });
+        }
+    }, [props.finishedTest]);
+
+
+
+    useEffect(()=>{
+        const runNextTest = async () => {
+            
+            if(stage.stage === 'RUNNING'){
+                
+                if(stage.numberOfTestsCompleted > 0 && !props.finishedTest.passed){
+                    setStage({
+                        ...stage,
+                        stage: 'FAILED',
+                    });
+                }
+                else if(stage.numberOfTestsCompleted === props.test.test.length){    
+                    setStage({
+                        ...stage,
+                        stage: 'PASSED',
+                    });
+                }
+                else{
+                    try{
+                        let data: any = await fetch(`${process.env.REACT_APP_DOMAIN}/api/startTest`, {
+                            method: "POST",
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify(props.test.test[stage.numberOfTestsCompleted]), // body data type must match "Content-Type" header
+                        });
+                        data = await data.json();
+                        // props.socket.emit('subscribe', data.id);
+                        setTestId([...testId, data.id]);
+                        addRunningTest({ variables: {testId: data.id, testName: props.test.testName} });
+                        
+                    }
+                    catch(err){
+                        console.log(err)
+                    }
+
+                }
+            }
+        }
+
+        runNextTest();
+
     }, [stage]);
 
-
     const addRunningTest = useMutation(gql`
-        mutation AddRunningTest($testId: String!, $testName: String!) {
+        mutation AddRunningTest($testId: [String], $testName: String!) {
             addRunningTest(testId: $testId, testName: $testName) @client
+        }
+    `);
+    const setRunTestStage = useMutation(gql`
+        mutation SetRunTestStage($testResultId: String!, $runTestStage: String!) {
+            setRunTestStage(testResultId: $testResultId, runTestStage: $runTestStage) @client
         }
     `);
 
     const runTest = async () => {
-        if (stage !== 'RUNNING') {
-            setActiveIcon(<PauseCircleOutline/>);
-            setStage('RUNNING');
-            setTimeout(() => {
-                setStage('PASSED');
-            }, 2000);
-            try{
-                let data: any = await fetch(`${process.env.REACT_APP_DOMAIN}/api/starttest`, {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify(props.test), // body data type must match "Content-Type" header
-                });
-                data = await data.json();
-                addRunningTest({ variables: {testId: data.id, testName: props.testName} })
-                // console.log({data})
-                setTestId(data.id)
-            }
-            catch(err){
-                console.log(err)
-            }
+        if (stage.stage !== 'RUNNING') {
+            
+            setTestId([]);
+            setStage({
+                stage: 'RUNNING',
+                numberOfTestsCompleted: 0,
+            });
         }
     }
-    const testResults = () => {
 
-        if (stage !== 'RUNNING') {
-            setActiveIcon(<PauseCircleOutline/>);
-            setStage('RUNNING');
-            setTimeout(() => {
-                setStage('PASSED');
-            }, 2000);
-        }
+    const testResults = async () => {
+
+        setRunTestStage({ variables: {testResultId: testId, runTestStage: 'RESULT'} });
+        setOpenResult(true);
     }
+
+    const showConsole = async () => {
+        setOpenConsole(true); 
+    }
+
     return (
         <Fragment>
-            <div title={props.testDescription}>
+            {openResult&&<Result 
+                testResultId={testId} 
+                openResult={openResult}
+                closeResult={()=> setOpenResult(false)}
+            />}
+            <Console 
+                testLogs={testLogs} 
+                openResult={openConsole}
+                closeResult={()=> setOpenConsole(false)}
+            />
+            <div title={props.test.testDescription}>
                 <Chip 
-                    label={props.testName} 
+                    label={props.test.testName} 
                     className={classes.chip} 
                     style={{
                         backgroundColor: backgroundColor, 
@@ -139,32 +211,44 @@ export default (props: any) =>{
                         minHeight: '2.3rem',
                         fontSize:   '1.1rem'
                     }}
+                    onClick={showConsole}
                 />
             </div>
             <div className={classes.wrapper}>
                 <IconButton className={classes.button} aria-label="Run Test" color="primary" onClick={runTest}>
                     {activeIcon}
                 </IconButton>
-                {stage==='RUNNING' && <CircularProgress size={68} className={classes.fabProgress} />}
+                {stage.stage==='RUNNING' && <CircularProgress size={68} className={classes.fabProgress} />}
             </div>
             <Fab
                 aria-label="Status"
                 variant="extended"
                 size="medium"
                 style={{
-                    display: stage==='READY'?'none':'inline-block',
+                    display: stage.stage==='READY'?'none':'inline-block',
                     backgroundColor: backgroundColor,
                     color: 'white',
                     margin: '1rem',
                     minWidth: '8rem',
                 }}
-                disabled={stage==='RUNNING'}
+                disabled={stage.stage==='RUNNING'}
                 onClick={testResults}
             >
-                {stage}
+                {stage.stage}
             </Fab>
-            <div className={classes.LinearProgress} style={{display: stage==='RUNNING'?'inline-block':'none'}}>
+            <div className={classes.LinearProgress} style={{textAlign: 'center', display: stage.stage==='RUNNING'?'inline-block':'none'}}>
                 <LinearProgress />
+                <span 
+                style={{
+                    color: blue[700],
+                    fontWeight: 'bold',
+                    top: '2rem',
+                    margin: '0rem 0 0 0 ',
+                    padding: '0.5rem 0 0 0',
+                    display: 'inline-block',
+                }}>
+                    {`${stage.numberOfTestsCompleted} / ${props.test.test.length}`}
+                </span>
             </div>
         </Fragment>
     );

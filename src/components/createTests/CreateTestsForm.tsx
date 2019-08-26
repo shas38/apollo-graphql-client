@@ -1,9 +1,11 @@
-import React, { } from 'react';
+import React from 'react';
 import { useQuery } from 'react-apollo-hooks';
-import SelectTestType from './callTest/SelectTestType';
+import SelectTestType from './SelectTestType';
 import Party from './callTest/Party';
 import ConfirmCallTest from './callTest/ConfirmCallTest';
-import SuccessCallTest from './callTest/SuccessCallTest';
+import Success from './Success';
+import DefineUMSTest from './umsTest/DefineUMSTest';
+import ConfirmUmsTest from './umsTest/ConfirmUmsTest';
 import stageQuery from '../../graphql/query/stageQuery';
 
 
@@ -29,10 +31,14 @@ const CreateTestsForm = (props: any) => {
                 partyName={'BParty'}
             />
             );
+        case 'DefineUMSTest':
+            return <DefineUMSTest/>;
         case 'ConfirmCallTest':
             return <ConfirmCallTest />;
-        case 'SuccessCallTest':
-            return <SuccessCallTest />;
+        case 'ConfirmUmsTest':
+            return <ConfirmUmsTest />;
+        case 'Success':
+            return <Success />;
         default:
             return(
                 <SelectTestType/>

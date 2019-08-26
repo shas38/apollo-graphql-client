@@ -1,19 +1,18 @@
-import React, { Fragment, useState, useEffect } from 'react';
+import React, { Fragment, useState } from 'react';
 import {
     createStyles,
     makeStyles,
     Theme,
   } from '@material-ui/core/styles';
-// import { useMutation, useQuery } from 'react-apollo-hooks';
-// import gql from 'graphql-tag';
-// import Button from '@material-ui/core/Button';
-import Fab from '@material-ui/core/Fab';
+import { useMutation } from 'react-apollo-hooks';
+import gql from 'graphql-tag';
 import Chip from '@material-ui/core/Chip';
-import CheckIcon from '@material-ui/icons/Check';
 import ClearIcon from '@material-ui/icons/Clear';
 import EditIcon from '@material-ui/icons/Edit';
-import { green, red, blue } from '@material-ui/core/colors';
+import { green, blue } from '@material-ui/core/colors';
 import IconButton from '@material-ui/core/IconButton';
+import Modal from './Modal';
+import Backdrop from './Backdrop';
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -35,6 +34,44 @@ const useStyles = makeStyles((theme: Theme) =>
 export default (props: any) =>{
 
     const classes = useStyles();
+    const [deleting, setDeleting] = useState(false);
+    
+    const GET_TESTS = gql`
+    query {
+      tests{
+        testName
+        testDescription
+        testType
+        test
+      }
+    }
+  `;
+    const deleteTestMutation = useMutation(gql`
+        mutation DeleteTest($testName: String!) {
+            deleteTest(testName: $testName) {
+                ok
+                n
+                testName
+            }
+        }
+    `,
+    {
+      update(cache, { data: { deleteTest } }) {
+          const testName = deleteTest.testName
+        console.log({testName})
+  
+        const { tests }: any = cache.readQuery({ query: GET_TESTS });
+
+        var newTests = tests.filter(function(test: any, index: any){
+            return test.testName !== testName;
+        });
+
+        cache.writeQuery({
+          query: GET_TESTS,
+          data: { tests: newTests },
+        });
+      }
+    });
 
     const editTest = async () => {
 
@@ -42,10 +79,37 @@ export default (props: any) =>{
     }
     const deleteTest = async () => {
 
-
+        setDeleting(true);
     }
 
+
+    const modalConfirmHandler = async() => {
+        setDeleting(false);
+        const result = await deleteTestMutation({ variables: {
+            testName: props.testName
+        }})
+        // console.log(result);
+        // props.refetch()
+        
+    };
+
+    const modalCancelHandler  = () => {
+        setDeleting(false);
+    };
+
     return (
+        <Fragment>
+        {deleting && <Backdrop />}
+        {deleting && (
+          <Modal
+            title="Delete Test?"
+            onCancel={modalCancelHandler}
+            onConfirm={modalConfirmHandler}
+          >
+            <p><b>Delete {props.testName}?</b></p>
+            <p><b>Test Description:</b> {props.testDescription}</p>
+          </Modal>
+        )}
         <div style={{width: '100%', margin: "auto", textAlign: 'center'}}>
             <div title={props.testDescription} style={{float: 'left', display: 'inline-block'}}>
                 <Chip 
@@ -69,5 +133,6 @@ export default (props: any) =>{
                 </IconButton>
             </div>
         </div>
+        </Fragment>
     );
 }

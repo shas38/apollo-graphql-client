@@ -9,7 +9,7 @@ import TextField from '@material-ui/core/TextField';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import testTypesQuery from '../../../graphql/query/testTypesQuery';
+import testTypesQuery from '../../graphql/query/testTypesQuery';
 
 export const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -56,23 +56,41 @@ const FormPersonalDetails = (props: any) => {
         SetCallTestInputsMutation({ variables: {inputType: inputName, inputValue: event.target.value } })
     }
 
+    const tests = useQuery(gql`
+        query {
+            tests{
+                testName
+                testDescription
+                testType
+                test
+            }
+        }
+    `);
     const nextStep = (e: any) => {
         e.preventDefault();
         if(selectedTestType.trim() === '' || testName.trim() === '') {
             setValidationError("Both Test Type and Test Name is Required")
             return
         }
+        if(tests.data.tests.some((test: any)=>{
+            return test.testName === testName;
+        })){
+            setValidationError(`${testName} already exists`)
+            return;
+        }
 
         switch(selectedTestType){
             case 'call': 
                 setStageMutation({ variables: {stage: 'SelectAParty'} }); 
+                break;
+            case 'ums': 
+                setStageMutation({ variables: {stage: 'DefineUMSTest'} }); 
                 break;
             default: 
                 setStageMutation({ variables: {stage: 'SelectAParty'} }); 
                 break;
         }    
     };
-
 
     return (
         <Fragment>
@@ -105,6 +123,7 @@ const FormPersonalDetails = (props: any) => {
             <FormControl className={classes.formControl} required>
                 <InputLabel htmlFor="testType">Test Type</InputLabel>
                 <Select
+                    style={{minWidth: '11.5rem'}}
                     value={selectedTestType}
                     onChange={handleChange('selectedTestType')}
                     inputProps={{

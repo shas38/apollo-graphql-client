@@ -13,6 +13,7 @@ import SetIcon from '@material-ui/icons/SettingsEthernet';
 import RunIcon from '@material-ui/icons/PlayCircleOutline';
 import MenuIcon from '@material-ui/icons/Menu';
 import AddIcon from '@material-ui/icons/AddCircleOutline';
+import CompareArrows from '@material-ui/icons/CompareArrows';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
@@ -81,6 +82,7 @@ function ResponsiveDrawer(props: any) {
            {text: 'Create Tests', to: '/createTests', icon: <AddIcon />},
            {text: 'Create Test Sets', to: '/createTestSets', icon: <SetIcon />},
            {text: 'Modify Tests', to: '/modifyTests', icon: <EditIcon />},
+          //  {text: 'Test', to: '/test', icon: <CompareArrows />},
           ].map((item, index) => (
             <ListItem component={Link} to={item.to} button key={item.text} selected={location.pathname === item.to}>
               <ListItemIcon>{item.icon}</ListItemIcon>
