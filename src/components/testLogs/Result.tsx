@@ -10,7 +10,6 @@ import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 import { TransitionProps } from '@material-ui/core/transitions';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import ResultTable from './ResultTable';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -36,24 +35,6 @@ const Transition = React.forwardRef<unknown, TransitionProps>(function Transitio
 export default (props: any) => {
   const classes = useStyles();
 
-  const { loading, error, data } = useQuery(gql`
-      query Testlogs($testId: [ID]){
-          testlogs(testId: $testId){
-              testName
-              testType
-              test
-              id
-              startTime
-              endTtime
-              results
-          }
-      }
-  `, { 
-      variables: {
-        testId: props.testResultId
-      },
-  });
-
   return (
       <Dialog fullScreen open={props.openResult} onClose={props.closeResult} TransitionComponent={Transition}>
         <AppBar className={classes.appBar} style={{position: 'sticky', top: '0', marginBottom: '1rem'}}>
@@ -66,13 +47,9 @@ export default (props: any) => {
             </Typography>
           </Toolbar>
         </AppBar>
-        
-        {loading&&<CircularProgress className={classes.progress} />}
-        {error&&<p>{`Error! ${error.message}`}</p>}
-        {data.testlogs && 
         <ResultTable 
-          testlogs={data.testlogs}
-        />}
+          testlogs={props.tests.tests}
+        />
       </Dialog>
   );
 }

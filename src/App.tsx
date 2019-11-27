@@ -10,6 +10,9 @@ import Navigation from "./navigation/Navigation"
 import CreateTests from "./components/createTests/CreateTests"
 import CreateTestSets from "./components/createTestSets/CreateTestSets"
 import ModifyTests from "./components/modifyTests/ModifyTests"
+import Manage from "./components/manage/Manage"
+import SearchTestLogs from "./components/testLogs/SearchTestLogs"
+import CustomResults from "./components/customResults/CustomResults"
 import About from "./components/About"
 import Contact from "./components/Contact"
 import Login from "./components/Login"
@@ -17,19 +20,23 @@ import SignUp from "./components/SignUp"
 import Test from "./components/Test"
 import setCallTestInputsMutation from "./graphql/reducers/setCallTestInputsMutation"
 import setUmsTestInputsMutation from "./graphql/reducers/setUmsTestInputsMutation"
+import setClientsTestInputsMutation from "./graphql/reducers/setClientsTestInputsMutation"
 import setStageMutation from "./graphql/reducers/setStageMutationMutation"
 import setRunTestStageMutation from "./graphql/reducers/setRunTestStageMutation"
 import addRunningTestMutation from "./graphql/reducers/addRunningTest"
 import removeRunningTestMutation from "./graphql/reducers/removeRunningTest"
+import modifySearchMutation from "./graphql/reducers/modifySearch"
 import GetRunningTestsQuery from "./graphql/reducers/GetRunningTests"
 
 const cache = new InMemoryCache();
 const initData = {
+  search: '',
   runningTests: [],
   testName: null,
   selectedTestType: null,
   testDescription: null,
   stage: 'SelectTestType',
+  modifyTestName: "",
   runTestStage: 'tests',
   testResultId: null,
   umsTest:{
@@ -37,6 +44,13 @@ const initData = {
     selectedDN: null,
     selectedUms: null,
     selectedCluster: null,
+  },
+  clientsTest:{
+    __typename: 'ClientsTest',
+    selectedDN: null,
+    selectedDataCenter: null,
+    selectedCluster: null,
+    selectedProduct: null,
   },
   AParty:{
       __typename: 'Party',
@@ -81,9 +95,11 @@ const client = new ApolloClient({
     Mutation: {
       setCallTestInputs: setCallTestInputsMutation,
       setUmsTestInputs: setUmsTestInputsMutation,
+      setClientsTestInputs: setClientsTestInputsMutation,
       setStage: setStageMutation,
       setRunTestStage: setRunTestStageMutation,
       removeRunningTest: removeRunningTestMutation,
+      modifySearch: modifySearchMutation,
       addRunningTest: addRunningTestMutation,
     },
     Query:{
@@ -139,6 +155,18 @@ function App() {
             <Route
               path="/test"
               component={Test}
+            />
+            <Route
+              path="/searchTestLogs"
+              component={SearchTestLogs}
+            />
+            <Route
+              path="/CustomResults"
+              component={CustomResults}
+            />
+            <Route
+              path="/manage"
+              component={Manage}
             />
             <Route
               render={()=> <h1>Not Found</h1>}

@@ -1,4 +1,6 @@
 import React, {Fragment} from 'react';
+import { useMutation } from 'react-apollo-hooks';
+import { gql } from "apollo-boost";
 import AppBar from '@material-ui/core/AppBar';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Drawer from '@material-ui/core/Drawer';
@@ -13,10 +15,13 @@ import SetIcon from '@material-ui/icons/SettingsEthernet';
 import RunIcon from '@material-ui/icons/PlayCircleOutline';
 import MenuIcon from '@material-ui/icons/Menu';
 import AddIcon from '@material-ui/icons/AddCircleOutline';
-import CompareArrows from '@material-ui/icons/CompareArrows';
+import FindInPageIcon from '@material-ui/icons/FindInPage';
+import SettingsApplicationsIcon from '@material-ui/icons/SettingsApplications';
+import SearchIcon from '@material-ui/icons/Search';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles, useTheme, Theme, createStyles } from '@material-ui/core/styles';
+import InputBase from '@material-ui/core/InputBase';
+import { makeStyles, useTheme, Theme, createStyles, fade } from '@material-ui/core/styles';
 import { Link, withRouter} from 'react-router-dom';
 
 const drawerWidth = 240;
@@ -49,6 +54,50 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
       padding: theme.spacing(3),
     },
+    inputInput: {
+      padding: theme.spacing(1, 1, 1, 7),
+      transition: theme.transitions.create('width'),
+      width: '100%',
+      [theme.breakpoints.up('sm')]: {
+        width: 120,
+        '&:focus': {
+          width: 200,
+        },
+      },
+    },
+    searchIcon: {
+      width: theme.spacing(7),
+      height: '100%',
+      position: 'absolute',
+      pointerEvents: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputRoot: {
+      color: 'inherit',
+    },
+    search: {
+      position: 'relative',
+      borderRadius: theme.shape.borderRadius,
+      backgroundColor: fade(theme.palette.common.white, 0.15),
+      '&:hover': {
+        backgroundColor: fade(theme.palette.common.white, 0.25),
+      },
+      marginLeft: 0,
+      width: '100%',
+      [theme.breakpoints.up('sm')]: {
+        marginLeft: theme.spacing(1),
+        width: 'auto',
+      },
+    },
+    title: {
+      flexGrow: 1,
+      display: 'none',
+      [theme.breakpoints.up('sm')]: {
+        display: 'block',
+      },
+    },
   }),
 );
 
@@ -66,10 +115,18 @@ function ResponsiveDrawer(props: any) {
 
   const { location } = props;
 
+
   function handleDrawerToggle() {
     setMobileOpen(!mobileOpen);
   }
-  
+
+
+  const modifySearch = useMutation(gql`
+    mutation ModifySearch($search: String!) {
+      modifySearch(search: $search) @client
+      }
+  `);
+
   const drawer = (
 
       <Fragment>
@@ -77,14 +134,23 @@ function ResponsiveDrawer(props: any) {
           <div className={classes.toolbar} />
         </Hidden>
         
-        <List>
-          {[{text: 'Run Tests', to: '/', icon: <RunIcon />},
+        <List >
+          {[
+          {text: 'Run Tests', to: '/', icon: <RunIcon />},
            {text: 'Create Tests', to: '/createTests', icon: <AddIcon />},
            {text: 'Create Test Sets', to: '/createTestSets', icon: <SetIcon />},
            {text: 'Modify Tests', to: '/modifyTests', icon: <EditIcon />},
+           {text: 'Test Logs', to: '/searchTestLogs', icon: <FindInPageIcon />},
+           {text: 'Manage', to: '/manage', icon: <SettingsApplicationsIcon />},
           //  {text: 'Test', to: '/test', icon: <CompareArrows />},
           ].map((item, index) => (
-            <ListItem component={Link} to={item.to} button key={item.text} selected={location.pathname === item.to}>
+            <ListItem 
+              component={Link} 
+              to={item.to} 
+              button 
+              key={item.text} 
+              selected={location.pathname === item.to}
+            >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText>{item.text}</ListItemText>
             </ListItem>
@@ -108,9 +174,23 @@ function ResponsiveDrawer(props: any) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
+          <Typography className={classes.title} variant="h6" noWrap>
             PVT Tool
           </Typography>
+          <div className={classes.search}>
+            <div className={classes.searchIcon}>
+              <SearchIcon />
+            </div>
+            <InputBase
+              onChange={(event: any)=>{modifySearch({ variables: {search: event.target.value} })}}
+              placeholder="Search…"
+              classes={{
+                root: classes.inputRoot,
+                input: classes.inputInput,
+              }}
+              inputProps={{ 'aria-label': 'search' }}
+            />
+          </div>
         </Toolbar>
       </AppBar>
       <nav className={classes.drawer} aria-label="Mailbox folders">

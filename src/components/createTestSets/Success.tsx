@@ -1,6 +1,4 @@
 import React, {Fragment} from 'react';
-import { useQuery } from 'react-apollo-hooks';
-import gql from 'graphql-tag';
 import Button  from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
 

@@ -10,7 +10,9 @@ import Button  from '@material-ui/core/Button';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import selectedCallTestInputQuery from '../../../graphql/query/callTest/selectedCallTestInputQuery';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import {useSpring, animated} from 'react-spring'
+
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -23,6 +25,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     control: {
       padding: theme.spacing(10),
+    },
+    progress: {
+        margin: theme.spacing(2),
     },
   }),
 );
@@ -64,11 +69,23 @@ const  ConfirmCallTest = (props: any) => {
         console.log({createTest})
   
         const { tests }: any = cache.readQuery({ query: GET_TESTS });
-  
-        cache.writeQuery({
-          query: GET_TESTS,
-          data: { tests: tests.concat([createTest]) },
-        });
+
+        if(props.type === 'modify'){
+            const newTests = tests.map((test: any)=>{
+                if(test.testName === createTest.testName) return createTest
+                else return test
+            })
+            cache.writeQuery({
+                query: GET_TESTS,
+                data: { tests: newTests },
+            });
+        }
+        else{
+            cache.writeQuery({
+                query: GET_TESTS,
+                data: { tests: tests.concat([createTest]) },
+            });
+        }
       }
     });
 
@@ -132,20 +149,22 @@ const  ConfirmCallTest = (props: any) => {
                             </ListItem>
                         )
                     }
-                    else return
+                    else return null;
                 })
             }
         </List>
     )
-
+    const cancel = ()=>{
+        setStageMutation({ variables: {stage: 'SelectTestToModify'} });  
+    }
     const springProps = useSpring({to: { opacity: 1, marginTop: 0 }, from: { opacity: 0, marginTop: -500 }})
     return (     
         <animated.div style={springProps}>
         <Grid container justify="center" className={classes.root} >
-            {loading&&<h2>Loading...</h2>}
+            {loading&&<CircularProgress className={classes.progress} />}
             {error&&<p>{`Error! ${error.message}`}</p>}
-            <h1 title="TestType"> Test Type </h1>  
-            <Grid item xs={12} style={{display: loading?'none':'block'}}>         
+            {!loading && <h1 title="TestType"> Test Type </h1>}  
+            {!loading && <Grid item xs={12} style={{display: 'block'}}>         
                 <Grid container justify="center" spacing={10}>          
                     <Grid item>
                         {data&&
@@ -186,6 +205,15 @@ const  ConfirmCallTest = (props: any) => {
                     </Grid>   
                 </Grid>
                 <Grid container justify="center">
+                    {props.type === 'modify' && <FormControl>
+                        <Button
+                            color="primary"
+                            onClick={cancel}
+                            style={{margin: '2rem 0 auto'}}
+                        >
+                        Cancel
+                        </Button>
+                    </FormControl>}
                     <FormControl>
                         <Button
                             color="primary"
@@ -205,7 +233,7 @@ const  ConfirmCallTest = (props: any) => {
                         </Button>
                     </FormControl>
                 </Grid>
-            </Grid>
+            </Grid>}
             {validationError&&<p style={{color: 'red'}}>{`Error! ${validationError}`}</p>}
         </Grid>
         </animated.div>

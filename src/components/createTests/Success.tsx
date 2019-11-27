@@ -1,5 +1,5 @@
 import React, {Fragment} from 'react';
-import { useQuery, useMutation } from 'react-apollo-hooks';
+import { useMutation } from 'react-apollo-hooks';
 import gql from 'graphql-tag';
 import Button  from '@material-ui/core/Button';
 import FormControl from '@material-ui/core/FormControl';
@@ -14,7 +14,16 @@ const Success = (props: any) => {
 
     const createAnother = (e: any) => {
         e.preventDefault();
-        setStageMutation({ variables: {stage: 'SelectTestType'} }); 
+        if(props.type === 'create'){
+            setStageMutation({ variables: {stage: 'SelectTestType'} }); 
+        }
+        else{
+            // if(props.tests[0].testType === 'testSet')
+            //     setStageMutation({ variables: {stage: 'SelectTestToModify'} }); 
+            // else setStageMutation({ variables: {stage: 'SelectTestType'} }); 
+            setStageMutation({ variables: {stage: 'SelectTestToModify'} }); 
+        }
+        
     };
 
     return (
@@ -27,7 +36,7 @@ const Success = (props: any) => {
                     onClick={createAnother}
                     style={{margin: '2rem 0 auto', fontSize: '1.25rem'}}
                 >
-                Create Another
+                    {props.type === 'modify'? "Modify Another": "Create Another"}
                 </Button>
             </FormControl>
         </Fragment>

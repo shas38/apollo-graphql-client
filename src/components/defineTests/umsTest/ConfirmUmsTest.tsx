@@ -1,5 +1,5 @@
     
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { useMutation, useQuery } from 'react-apollo-hooks';
 import gql from 'graphql-tag';
 import FormControl from '@material-ui/core/FormControl';
@@ -7,6 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Button  from '@material-ui/core/Button';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -21,6 +22,9 @@ const useStyles = makeStyles((theme: Theme) =>
     control: {
       padding: theme.spacing(10),
     },
+    progress: {
+        margin: theme.spacing(2),
+    },
   }),
 );
 
@@ -30,18 +34,18 @@ const  ConfirmUmsTest = (props: any) => {
     const [validationError, setValidationError] = useState<string | null>(null);
     const { loading, error, data }: any = useQuery(gql`
         query selectedUmsTestInput{
-            testName @client(always: true)
-            selectedTestType @client(always: true) 
-            testDescription @client(always: true) 
+            testName @client
+            selectedTestType @client
+            testDescription @client
             umsTest{
-                selectedDN @client(always: true)  
-                selectedUms @client(always: true)  
-                selectedCluster @client(always: true)  
+                selectedDN @client
+                selectedUms @client 
+                selectedCluster @client 
             }
         }
     `);
 
-    console.log({ConfirmUmsTest: data})
+    
     const setStageMutation = useMutation(gql`
         mutation SetStage($stage: String!) {
             setStage(stage: $stage) @client
@@ -72,11 +76,24 @@ const  ConfirmUmsTest = (props: any) => {
         console.log({createTest})
   
         const { tests }: any = cache.readQuery({ query: GET_TESTS });
-  
-        cache.writeQuery({
-          query: GET_TESTS,
-          data: { tests: tests.concat([createTest]) },
-        });
+        
+        if(props.type === 'modify'){
+            const newTests = tests.map((test: any)=>{
+                if(test.testName === createTest.testName) return createTest
+                else return test
+            })
+            cache.writeQuery({
+                query: GET_TESTS,
+                data: { tests: newTests },
+            });
+        }
+        else{
+            cache.writeQuery({
+                query: GET_TESTS,
+                data: { tests: tests.concat([createTest]) },
+            });
+        }
+
       }
     });
 
@@ -114,12 +131,15 @@ const  ConfirmUmsTest = (props: any) => {
         setStageMutation({ variables: {stage: 'DefineUMSTest'} }); 
     };
 
+    const cancel = ()=>{
+        setStageMutation({ variables: {stage: 'SelectTestToModify'} });  
+    }
     return (     
         <Grid container justify="center" className={classes.root} >
-            {loading&&<h2>Loading...</h2>}
+            {loading&&<CircularProgress className={classes.progress} />}
             {error&&<p>{`Error! ${error.message}`}</p>}
             
-            <Grid item xs={12} style={{display: loading?'none':'block'}}>         
+            {!loading && <Grid item xs={12} style={{display: 'block'}}>         
                 <Grid container justify="center" spacing={10}>
                     <Grid item>
                         <h1 title="Test Type" style={{margin: '2rem auto'}}> Test Type </h1>
@@ -189,6 +209,15 @@ const  ConfirmUmsTest = (props: any) => {
                     </Grid>
                 </Grid>
                 <Grid container justify="center">
+                    {props.type === 'modify' && <FormControl>
+                        <Button
+                            color="primary"
+                            onClick={cancel}
+                            style={{margin: '2rem 0 auto'}}
+                        >
+                        Cancel
+                        </Button>
+                    </FormControl>}
                     <FormControl>
                         <Button
                             color="primary"
@@ -208,7 +237,7 @@ const  ConfirmUmsTest = (props: any) => {
                         </Button>
                     </FormControl>
                 </Grid>
-            </Grid>
+            </Grid>}
             {validationError&&<p style={{color: 'red'}}>{`Error! ${validationError}`}</p>}
         </Grid>
     );

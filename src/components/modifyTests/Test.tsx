@@ -9,6 +9,7 @@ import gql from 'graphql-tag';
 import Chip from '@material-ui/core/Chip';
 import ClearIcon from '@material-ui/icons/Clear';
 import EditIcon from '@material-ui/icons/Edit';
+import SettingsEthernet from '@material-ui/icons/SettingsEthernet';
 import { green, blue } from '@material-ui/core/colors';
 import IconButton from '@material-ui/core/IconButton';
 import Modal from './Modal';
@@ -37,15 +38,15 @@ export default (props: any) =>{
     const [deleting, setDeleting] = useState(false);
     
     const GET_TESTS = gql`
-    query {
-      tests{
-        testName
-        testDescription
-        testType
-        test
-      }
-    }
-  `;
+        query {
+            tests{
+                testName
+                testDescription
+                testType
+                test
+            }
+        }
+    `;
     const deleteTestMutation = useMutation(gql`
         mutation DeleteTest($testName: String!) {
             deleteTest(testName: $testName) {
@@ -57,25 +58,35 @@ export default (props: any) =>{
     `,
     {
       update(cache, { data: { deleteTest } }) {
-          const testName = deleteTest.testName
-        console.log({testName})
-  
-        const { tests }: any = cache.readQuery({ query: GET_TESTS });
+            const testName = deleteTest.testName
+            console.log({testName})
 
-        var newTests = tests.filter(function(test: any, index: any){
-            return test.testName !== testName;
-        });
+            const { tests }: any = cache.readQuery({ query: GET_TESTS });
 
-        cache.writeQuery({
-          query: GET_TESTS,
-          data: { tests: newTests },
-        });
+            var newTests = tests.filter(function(test: any, index: any){
+                return test.testName !== testName;
+            });
+
+            cache.writeQuery({
+                query: GET_TESTS,
+                data: { tests: newTests },
+            });
       }
     });
 
+
+    const setStageMutation = useMutation(gql`
+        mutation SetStage($stage: String!, $modifyTestName: String) {
+            setStage(stage: $stage, modifyTestName: $modifyTestName) @client
+        }
+    `);
+
     const editTest = async () => {
-
-
+        // if(props.test.testType === 'testSet')
+        //     setStageMutation({ variables: {stage: 'CreateTestSets', modifyTestName: props.testName} })
+        // else{
+        //     setStageMutation({ variables: {stage: 'SelectTestType', modifyTestName: props.testName} })
+        // }
     }
     const deleteTest = async () => {
 
@@ -88,9 +99,13 @@ export default (props: any) =>{
         const result = await deleteTestMutation({ variables: {
             testName: props.testName
         }})
-        // console.log(result);
-        // props.refetch()
-        
+        if(result.ok === 0){
+
+        }
+        else{
+            console.log({result})
+        }
+
     };
 
     const modalCancelHandler  = () => {
@@ -113,7 +128,7 @@ export default (props: any) =>{
         <div style={{width: '100%', margin: "auto", textAlign: 'center'}}>
             <div title={props.testDescription} style={{float: 'left', display: 'inline-block'}}>
                 <Chip 
-                    label={props.testName} 
+                    label={props.test.testType === 'testSet'? [<SettingsEthernet key='SettingsEthernet' style={{margin: '0 0.5rem 0 0'}}/>, props.test.testName]: props.test.testName} 
                     className={classes.chip} 
                     style={{
                         backgroundColor: blue[500], 

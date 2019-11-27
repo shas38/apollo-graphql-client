@@ -6,12 +6,14 @@ import InputLabel from '@material-ui/core/InputLabel';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
-import {useStyles} from '../SelectTestType';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import {useStyles} from '../../createTests/SelectTestType';
 
 
 const DefineUMSTest = (props: any) => {
 
     const classes = useStyles();
+
 
     const formInputs = [
         {name: 'DN', inputName: 'selectedDN'},
@@ -38,6 +40,24 @@ const DefineUMSTest = (props: any) => {
             DN: state.selectedDN, ums: state.selectedUms, cluster: state.selectedCluster,
         },
     });
+
+    useEffect(()=>{
+        if(props.type === 'modify'){
+            setState({
+                selectedDN: props.test[0].test[0].test.DN ? props.test[0].test[0].test.DN : '',
+                selectedUms: props.test[0].test[0].test.ums ? String(props.test[0].test[0].test.ums) : '',
+                selectedCluster: props.test[0].test[0].test.cluster ? props.test[0].test[0].test.cluster : '',
+            })
+            setUmsTestInputsMutation({ variables: {inputType: "selectedDN", inputValue: props.test[0].test[0].test.DN} })
+            setUmsTestInputsMutation({ variables: {inputType: "selectedUms", inputValue: String(props.test[0].test[0].test.ums)} })
+            setUmsTestInputsMutation({ variables: {inputType: "selectedCluster", inputValue: props.test[0].test[0].test.cluster} })
+        }
+        else{
+            setUmsTestInputsMutation({ variables: {inputType: "selectedDN", inputValue: null} })
+            setUmsTestInputsMutation({ variables: {inputType: "selectedUms", inputValue: null} })
+            setUmsTestInputsMutation({ variables: {inputType: "selectedCluster", inputValue: null} })
+        }
+    }, [])
 
     useEffect(()=>{
         refetch()
@@ -89,11 +109,14 @@ const DefineUMSTest = (props: any) => {
         setStageMutation({ variables: {stage: 'SelectTestType'} });  
     };
     
+    const cancel = ()=>{
+        setStageMutation({ variables: {stage: 'SelectTestToModify'} });  
+    }
     return (
         <Fragment>
-            {!data && loading&&<h2>Loading...</h2>}
+            {!data && loading&&<CircularProgress className={classes.progress} />}
             {error&&<p>{`Error! ${error.message}`}</p>}
-            <div className={classes.root} style={{display: 'block'}}>
+            {!loading && <div className={classes.root} style={{display: 'block'}}>
             <h1 title={`Define UMS Test`}> {`Define UMS Test`} </h1>
             {formInputs.map(({name, inputName}: {name: string, inputName: string})=>(
                 <div key={name}>
@@ -113,6 +136,15 @@ const DefineUMSTest = (props: any) => {
                     </FormControl>
                 </div>
             ))}
+            {props.type === 'modify' && <FormControl className={classes.formControl}>
+                <Button
+                    color="primary"
+                    onClick={cancel}
+                    style={{margin: '2rem 0 auto'}}
+                >
+                Cancel
+                </Button>
+            </FormControl>}
             <FormControl className={classes.formControl}>
                 <Button
                     color="primary"
@@ -131,7 +163,7 @@ const DefineUMSTest = (props: any) => {
                 Continue
                 </Button>
             </FormControl>
-            </div>
+            </div>}
             {validationError&&<p style={{color: 'red'}}>{`Error! ${validationError}`}</p>}  
         </Fragment>
     );

@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useRef} from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import AppBar from '@material-ui/core/AppBar';
@@ -10,6 +10,26 @@ import Slide from '@material-ui/core/Slide';
 import { TransitionProps } from '@material-ui/core/transitions';
 
 
+const populateTable = (test: any): any =>{ 
+   
+  const result = Object.keys(test).map((field: any)=>{
+    
+    if(typeof(test[field]) === 'object' && test[field] !== null){
+      const markUp = <tr key={field}><td colSpan={2}><b>{field}</b></td></tr>;
+      return [markUp, ...populateTable(test[field])]
+    }
+    else{
+      return (
+        <tr key={field}>
+          <td>{field}</td>
+          <td>{typeof test[field]==="boolean"?test[field]?"Yes":"No":test[field]}</td>
+        </tr>
+      )
+    }
+  })
+  console.log(result)
+  return result
+}
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     appBar: {
@@ -28,50 +48,41 @@ const Transition = React.forwardRef<unknown, TransitionProps>(function Transitio
 
 export default (props: any) => {
   const classes = useStyles();
-  const [testLogs, setTestLogs] = useState('');
   const divEl: React.RefObject<HTMLDivElement> = useRef(null);
-  useEffect(()=>{
 
-    if(props.testLogs){
-      setTestLogs(testLogs => testLogs + '<br>' + props.testLogs);
-    }
-  }, [props.testLogs]);
 
   return (
     <Dialog                     
 
       fullScreen  
-      open={props.openResult} 
-      onClose={props.closeResult} 
+      open={props.openInfo} 
+      onClose={props.closeInfo} 
       TransitionComponent={Transition}
     >
       <AppBar className={classes.appBar}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={props.closeResult} aria-label="Close">
+          <IconButton edge="start" color="inherit" onClick={props.closeInfo} aria-label="Close">
             <CloseIcon />
           </IconButton>
           <Typography variant="h6" className={classes.title}>
-            Console
+            Test Info
           </Typography>
         </Toolbar>
       </AppBar>
       <div             
-        style={{
-          padding: '1rem',
-          backgroundColor: '#ccccff',
-          wordWrap: 'break-word',
-          overflow: 'scroll',
-          textOverflow: 'ellipsis'
-        }}  
         ref={divEl} 
-        id={'console'} 
+        id={'info'} 
       >
 
-        <pre>
-          <div
-            dangerouslySetInnerHTML={{__html: testLogs}}
-          />
-        </pre>
+        {props.tests.map((test: any)=>(
+          <table key={test.testName} style={{margin: '2rem'}}>
+            <tbody>
+              {populateTable(test).flat()}
+            </tbody>
+          </table>
+        ))}
+
+
       </div>
     </Dialog>
   );

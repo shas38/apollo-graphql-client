@@ -1,6 +1,7 @@
-import React, {} from 'react';
+import React, {useEffect, useState} from 'react';
 import { useQuery } from 'react-apollo-hooks';
 import gql from 'graphql-tag';
+import queryString from 'query-string';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
 import AppBar from '@material-ui/core/AppBar';
@@ -36,9 +37,14 @@ const Transition = React.forwardRef<unknown, TransitionProps>(function Transitio
 export default (props: any) => {
   const classes = useStyles();
 
+  const [state, setState] = useState<any>({
+    crq: null,
+    id: null,
+  })
+
   const { loading, error, data } = useQuery(gql`
-      query Testlogs($testId: [ID]){
-          testlogs(testId: $testId){
+      query Testlogs($testSetID: String){
+          testlogs(testSetID: $testSetID){
               testName
               testType
               test
@@ -50,26 +56,42 @@ export default (props: any) => {
       }
   `, { 
       variables: {
-        testId: props.testResultId
+        testSetID: state.id
       },
   });
-
+  useEffect(()=>{
+    const arg = queryString.parse(props.location.search)
+    const crq = arg.crq;
+    const id = arg.id;  
+    setState({
+      crq,
+      id
+    })
+    console.log(queryString.parse(props.location.search))
+  },[])
+  useEffect(()=>{
+    console.log(data)
+  },[data])
+  const close = ()=>{
+    // console.log("close")
+  }
+  // return <h1>result</h1>
   return (
-      <Dialog fullScreen open={props.openResult} onClose={props.closeResult} TransitionComponent={Transition}>
+      <Dialog fullScreen open={true} onClose={close} TransitionComponent={Transition}>
         <AppBar className={classes.appBar} style={{position: 'sticky', top: '0', marginBottom: '1rem'}}>
           <Toolbar >
-            <IconButton edge="start" color="inherit" onClick={props.closeResult} aria-label="Close">
+            <IconButton edge="start" color="inherit" onClick={close} aria-label="Close">
               <CloseIcon />
             </IconButton>
             <Typography variant="h6" className={classes.title}>
-              Test Result
+              {state.crq && state.id?`Test Result for CRQ ${state.crq} (${state.id})`: `Missing CRQ and ID`}
             </Typography>
           </Toolbar>
         </AppBar>
         
         {loading&&<CircularProgress className={classes.progress} />}
         {error&&<p>{`Error! ${error.message}`}</p>}
-        {data.testlogs && 
+        {data.testlogs && state.crq && state.id &&
         <ResultTable 
           testlogs={data.testlogs}
         />}
